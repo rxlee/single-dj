@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>百度一下，你就知道</title>
+    <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        div.item {
+            height: 100%;
+            width: 100%;
+        }
+
+        .carousel-inner {
+            margin: 0 auto;
+            width: 400px;
+            height: 100px;
+        }
+    </style>
+    <script>
+        var RecordCount;//全局变量  总条数
+var PageSize = 8;//全局变量 每页显示多少条数据
+
+//点击查询时，开始分页
+function btnSearch_Query() {
+    AjaxPage(1, PageSize);
+}
+
+$(document).ready(function(){
+    AjaxPage(1,PageSize);
+});
+
+//分页方法
+function AjaxPage(CurPage, PageSize) {
+    //清空数据显示Table
+    $('.list-group li').remove();
+    $('#pageCount').html('0');
+    $('#MainContent_AspNetPager_Msg').html(" <a disabled='disabled' style='margin-right:5px;'>← 上一页</a><span class='cpb' style='margin-right:5px;'>1</span><a disabled='disabled' style='margin-right:5px;'>下一页 →</a>");
+    $('#CurrentPageSize').html(CurPage);//页
+
+    //名称
+    var Name = $('#Search_NameContains').val();
+    var req = {
+        name: Name,
+        curPage:CurPage,
+        pageSize:PageSize,
+    };
+//调用了jquery.json 库
+    var encoded = JSON.stringify(req);
+
+    $.ajax({
+        type: 'POST',
+        async: false,
+        cache: false,
+        url: "ajaxdata/",
+        dataType: 'json',
+        data: encoded,
+        success: function (data) {
+            if (data == null) {
+                $('.list-group li').html("<li class='list-group-item red'>未查询到数据！</li>");
+            }
+            else if (data != null && data.msg != 'login_timeout') {
+                if (data["data"] != null) {
+                    var str = '';
+                    var d = data["data"]
+                    for (var i = 0; i < d.length; i++) {
+                    var hot = "";
+                        if(d[i]["ishot"]==1){
+                             hot = "<span class='glyphicon glyphicon-fire pull-right' style='color: rgb(234, 51, 65);'> hot</span>";
+                        }
+                        str += "<li class='list-group-item'><a href='"+d[i]["url"]+"'>"+d[i]["title"]+"</a>"+hot+"</li>";
+                    }
+                    $('.list-group').html(str);
+                    RecordCount = data["count"];
+                    $('#pageCount').html(RecordCount);
+                    //最大页数
+                    var maxpage = RecordCount % PageSize == 0 ? parseInt(RecordCount / PageSize) : (parseInt(RecordCount / PageSize) + 1);
+
+                    $('#MainContent_AspNetPager_Msg').html('');//分页链接
+                    var span = "<a style='margin-right: 5px; cursor: pointer;' href='javascript:void(0)' onclick='PageIndexClick(this)' id='TopPage' pageindex='0'><button class='btn btn-default'>上一页</button></a>";
+                    var firstPage = 0;
+                    var pagecount = 0;//循环的次数
+                    if (maxpage > 10) {
+                        pagecount = 10;
+                    } else {
+                        pagecount = maxpage;
+                    }
+                    if (CurPage > 10) {
+                        pagecount = CurPage;
+                        var firstPage = CurPage - 10;
+                        if (firstPage >= 1) {
+                            span += "<a style='margin-right: 5px; cursor: pointer;' href='javascript:void(0)'  onclick='CurPageSizeClick(" + firstPage + ",this)' >...</a>";
+                        }
+                    }
+                    for (var j = firstPage + 1; j < pagecount + 1; j++) {
+                        if (j == CurPage) {
+                            span += "<span class='cpb' style='margin-right: 5px; cursor: pointer;' onclick='CurPageSizeClick(" + j + ",this)'>" + j + "</span>";
+                        } else {
+                            span += "<a style='margin-right: 5px; cursor: pointer;' href='javascript:void(0)'  onclick='CurPageSizeClick(" + j + ",this)' >" + j + "</a>";
+                        }
+                    }
+                    pagecount = pagecount + 1;
+                    if (maxpage >= pagecount) {
+                        span += "<a style='margin-right: 5px; cursor: pointer;' href='javascript:void(0)'  onclick='CurPageSizeClick(" + pagecount + ",this)' >...</a>";
+                    }
+                    span += "<a style='margin-right: 5px; cursor: pointer;' href='javascript:void(0)' onclick='PageIndexClick(this)' id='NextPage' pageindex='0'><button class='btn btn-default'>下一页</button></a>";
+                    $('#MainContent_AspNetPager_Msg').html(span);
+                }
+                else {
+                    $('#SearchQuery_Table tbody').html("<tr><td colspan='6' class='red'>未查询到数据！</td></tr>");
+                }
+            }
+            else if (data.msg == 'login_timeout') {
+                LoginTimeout();
+            }
+
+        }
+    });
+}
+
+//首页、上一页、下一页、尾页点击
+function PageIndexClick(obj) {
+    //当前第几页
+    var CurrenPageSize = $.trim($('#CurrentPageSize').html());
+    if (CurrenPageSize != '') {
+        CurrenPageSize = parseInt(CurrenPageSize);
+    }
+    //id
+    var type = $(obj).attr('id');
+    //首页
+    if (type == 'FirstPage') {
+        CurrenPageSize = 1;
+        AjaxPage(CurrenPageSize, PageSize);
+        $('#CurrentPageSize').html('1');
+    }
+        //上一页
+    else if (type == 'TopPage') {
+        if (CurrenPageSize > 1) {
+            CurrenPageSize = CurrenPageSize - 1;
+        } else {
+            CurrenPageSize = 1;
+        }
+        AjaxPage(CurrenPageSize, PageSize);
+        $('#CurrentPageSize').html(CurrenPageSize);
+    }
+        //下一页
+    else if (type == 'NextPage') {
+        var size = CurrenPageSize + 1;
+        var maxpage = RecordCount % PageSize == 0 ? parseInt(RecordCount / PageSize) : (parseInt(RecordCount / PageSize) + 1);
+        if (size <= maxpage) {
+            CurrenPageSize = CurrenPageSize + 1
+        }
+        AjaxPage(CurrenPageSize, PageSize);
+        $('#CurrentPageSize').html(CurrenPageSize);
+    }
+        //尾页
+    else if (type == 'LastPage') {
+        CurrenPageSize = (RecordCount % PageSize == 0 ? parseInt(RecordCount / PageSize) : parseInt(RecordCount / PageSize) + 1);
+        AjaxPage(CurrenPageSize, PageSize);
+        $('#CurrentPageSize').html(CurrenPageSize);
+    }
+}
+    function research(){
+       AjaxPage(1,PageSize);
+    }
+
+//页数点击
+function CurPageSizeClick(CurPage, obj) {
+    $('#CurrentPageSize').html(CurPage);
+    AjaxPage(CurPage, PageSize);
+}
+$(function() {
+        $("#search").click(function(){
+            research();
+        });
+        $("#Search_NameContains").on('input',function(){
+           research();
+        }) ;
+    });
+
+
+
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <div class="row">
+        <h2 class="pull-center" style="color: rgb(165, 156, 122);">快樂搬運工</h2></div>
+    <div class="row">
+        <div class="pull-right"><span class="glyphicon glyphicon-exclamation-sign"
+                                      style="color: rgb(255, 0, 0);"> <strong>警告！</strong>**************！！！</span><br></div>
+    </div>
+
+    <div class="row">
+        <div class="body">
+            <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+
+                <!-- 轮播（Carousel）项目内容 -->
+                <div class="carousel-inner" role="listbox">
+                    <!-- 默认显示图片 -->
+                    <div class="item active">
+                        <img src="../static/img/1.jpg" alt="">
+                    </div>
+                    <div class="item">
+                        <img src="../static/img/2.jpg" alt="">
+                    </div>
+                    <div class="item">
+                        <img src="../static/img/3.jpg" alt="">
+                    </div>
+                    <div class="item">
+                        <img src="../static/img/4.jpg" alt="">
+                    </div>
+                    <div class="item">
+                        <img src="../static/img/5.jpg" alt="">
+                    </div>
+                    <div class="item">
+                        <img src="../static/img/6.jpg" alt="">
+                    </div>
+                    <div class="item">
+                        <img src="../static/img/7.jpg" alt="">
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="row col-lg-4 col-sm-6">
+                <div class="row input-group">
+                    <input type="text" class="form-control"  id="Search_NameContains">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" id="search">Go!</button>
+                    </span>
+                </div>
+     </div>
+    <br>
+    <br>
+    <br>
+    <div class="row">
+        <ul class="list-group">
+            <li class="list-group-item">免费域名注册</li>
+            <li class="list-group-item">免费 Window 空间托管</li>
+            <li class="list-group-item">图像的数量</li>
+            <li class="list-group-item">24*7 支持
+                <span class="glyphicon glyphicon-fire pull-right" style="color: rgb(234, 51, 65);"> hot</span>
+            </li>
+            <li class="list-group-item">每年更新成本</li>
+        </ul>
+<div class="row" style="margin-top: 15px;">
+   <div class="col-lg-12 col-sm-12 col-xs-12 col-xxs-12">
+      <div style="font-size: 14px;">共<label style="color: #20A8D8; font-size: 14px;" id="pageCount">0</label>条记录</div>
+   </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12 col-xs-12 col-xxs-12">
+      <div id="MainContent_AspNetPager_Msg" class="paginator">
+      </div>
+      <div class="hidden" id="CurrentPageSize">1</div>
+  </div>
+ </div>
+    </div>
+    <br>
+    <br>
+    {% include 'bottom.html' %}
+</div>
+</body>
+</html>
