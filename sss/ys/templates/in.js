@@ -1,25 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>百度一下，你就知道</title>
-    <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <style>
-        div.item {
-            height: 100%;
-            width: 100%;
-        }
-
-        .carousel-inner {
-            margin: 0 auto;
-            width: 400px;
-            height: 100px;
-        }
-    </style>
-    <script>
-        var RecordCount;//全局变量  总条数
+var RecordCount;//全局变量  总条数
 var PageSize = 8;//全局变量 每页显示多少条数据
 
 //点击查询时，开始分页
@@ -69,7 +48,7 @@ function AjaxPage(CurPage, PageSize) {
                         if(d[i]["ishot"]==1){
                              hot = "<span class='glyphicon glyphicon-fire pull-right' style='color: rgb(234, 51, 65);'> hot</span>";
                         }
-                        str += "<li class='list-group-item'><a href='"+d[i]["url"]+"'>"+d[i]["title"]+"</a>"+hot+"</li>";
+                        str += "<li class='list-group-item'><a href='javascript:void(0);' vv='"+d[i]["id"]+"' u='"+d[i]["url"]+"'>"+d[i]["title"]+"</a>"+hot+"</li>";
                     }
                     $('.list-group').html(str);
                     RecordCount = data["count"];
@@ -177,93 +156,13 @@ $(function() {
         $("#Search_NameContains").on('input',function(){
            research();
         }) ;
+        $(".list-group-item a").click(function(){
+            if($(this).attr("vv")<0){
+                window.open($(this).attr("u"));
+            }else{
+               var v = Math.random().toString(36).substr(2)+"%"+$(this).attr("vv")+"%"+Math.random().toString(36).substr(2)
+               window.open(window.location.href+"vidio/?v="+v);
+           }
+        });
     });
 
-
-
-    </script>
-</head>
-<body>
-
-<div class="container">
-    <div class="row">
-        <h2 class="pull-center" style="color: rgb(165, 156, 122);">快樂搬運工</h2></div>
-    <div class="row">
-        <div class="pull-right"><span class="glyphicon glyphicon-exclamation-sign"
-                                      style="color: rgb(255, 0, 0);"> <strong>警告！</strong>**************！！！</span><br></div>
-    </div>
-
-    <div class="row">
-        <div class="body">
-            <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
-
-                <!-- 轮播（Carousel）项目内容 -->
-                <div class="carousel-inner" role="listbox">
-                    <!-- 默认显示图片 -->
-                    <div class="item active">
-                        <img src="../static/img/1.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/2.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/3.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/4.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/5.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/6.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/7.jpg" alt="">
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
-    <br>
-    <div class="row col-lg-4 col-sm-6">
-                <div class="row input-group">
-                    <input type="text" class="form-control"  id="Search_NameContains">
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" type="button" id="search">Go!</button>
-                    </span>
-                </div>
-     </div>
-    <br>
-    <br>
-    <br>
-    <div class="row">
-        <ul class="list-group">
-            <li class="list-group-item">免费域名注册</li>
-            <li class="list-group-item">免费 Window 空间托管</li>
-            <li class="list-group-item">图像的数量</li>
-            <li class="list-group-item">24*7 支持
-                <span class="glyphicon glyphicon-fire pull-right" style="color: rgb(234, 51, 65);"> hot</span>
-            </li>
-            <li class="list-group-item">每年更新成本</li>
-        </ul>
-<div class="row" style="margin-top: 15px;">
-   <div class="col-lg-12 col-sm-12 col-xs-12 col-xxs-12">
-      <div style="font-size: 14px;">共<label style="color: #20A8D8; font-size: 14px;" id="pageCount">0</label>条记录</div>
-   </div>
-</div>
-<div class="row">
-  <div class="col-lg-12 col-sm-12 col-xs-12 col-xxs-12">
-      <div id="MainContent_AspNetPager_Msg" class="paginator">
-      </div>
-      <div class="hidden" id="CurrentPageSize">1</div>
-  </div>
- </div>
-    </div>
-    <br>
-    <br>
-    {% include 'bottom.html' %}
-</div>
-</body>
-</html>
