@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>百度一下，你就知道</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>{{title}}</title>
     <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -25,41 +26,24 @@
 
 <div class="container">
     <div class="row">
-        <h2 class="pull-center" style="color: rgb(165, 156, 122);">快樂搬運工</h2></div>
+        <h2 class="pull-center" style="color: rgb(165, 156, 122);">{{title}}</h2></div>
     <div class="row">
         <div class="pull-right"><span class="glyphicon glyphicon-exclamation-sign"
-                                      style="color: rgb(255, 0, 0);"> <strong>警告！</strong>**************！！！</span><br></div>
+                                      style="color: rgb(255, 0, 0);"> <strong>{{ info }}</strong></span><br></div>
     </div>
 
     <div class="row">
         <div class="body">
             <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
 
-                <!-- 轮播（Carousel）项目内容 -->
                 <div class="carousel-inner" role="listbox">
-                    <!-- 默认显示图片 -->
-                    <div class="item active">
-                        <img src="../static/img/1.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/2.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/3.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/4.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/5.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/6.jpg" alt="">
-                    </div>
-                    <div class="item">
-                        <img src="../static/img/7.jpg" alt="">
-                    </div>
-
+                    {% for img in imgs %}
+                        <div class="item {% if not forloop.last %}active{% endif %}">
+                            <img src="../static/img/{{img}}.jpg">
+                        </div>
+                    {% empty %}
+                    <div>抱歉，没有内容</div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -77,14 +61,10 @@
     <br>
     <br>
     <div class="row">
-        <ul class="list-group">
-            <li class="list-group-item">免费域名注册</li>
-            <li class="list-group-item">免费 Window 空间托管</li>
-            <li class="list-group-item">图像的数量</li>
-            <li class="list-group-item">24*7 支持
+        <ul class="list-group col-lg-12 col-sm-12 col-xs-12 col-xxs-12">
+            <li class="list-group-item">No result found
                 <span class="glyphicon glyphicon-fire pull-right" style="color: rgb(234, 51, 65);"> hot</span>
             </li>
-            <li class="list-group-item">每年更新成本</li>
         </ul>
 <div class="row" style="margin-top: 15px;">
    <div class="col-lg-12 col-sm-12 col-xs-12 col-xxs-12">
