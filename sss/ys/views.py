@@ -9,8 +9,10 @@ from models import Tg
 from models import Mvtj
 from models import Usertj
 from models import Config
+import redis
 import random
 from django.http import Http404
+import time
 
 
 def index(request):
@@ -56,20 +58,47 @@ def ajaxdata(request):
     #     pageSize = param["pageSize"]
     # name_dict = {"name": name, 'curPage': curPage, "pageSize": pageSize, "param": param}
     # name_dict = {"param":param}
-    a = Tg.objects.filter(timeout__gt=now)
-    c = Tg.objects.filter(timeout__gt=now).count()
-    count = Mvinfo.objects.filter(title__contains=name).count();
-    mall = Mvinfo.objects.filter(title__contains=name)
-    res = mall[(curPage - 1) * pageSize:curPage * pageSize]
+    # a = Tg.objects.filter(timeout__gt=now)
+    # c = Tg.objects.filter(timeout__gt=now).count()
+    tt = []
+    pool = redis.Redis(host='127.0.0.1',port=6379,db=0)
+    if pool.get("tginfo")==None:
+        a = Tg.objects.filter(timeout__gt=now)
+        for r in a:
+            di = dict()
+            di["url"]=r.url
+            di["desc"]=r.desc
+            tt.append(di)
+        pool.set("tginfo",json.dumps(tt))
+    else:
+        tt = json.loads(pool.get("tginfo"))
+    c = len(tt)
+    l=[]
+    if pool.get("mvinfo")==None:
+        all = Mvinfo.objects.filter(title__contains=name)
+        for r in all:
+            di = dict()
+            di["title"] = r.title
+            di["id"] = r.id
+            di["url"] = r.url
+            di["ishot"] = 1 if r.id % 4 == 0 or r.id % 7 == 0 else 0
+            l.append(di)
+        pool.set("mvinfo",json.dumps(l))
+    else:
+        l=json.loads(pool.get("mvinfo"))
+    count = len(l)
+    # mall = Mvinfo.objects.filter(title__contains=name)
+    # res = mall[(curPage - 1) * pageSize:curPage * pageSize]
+    res = l[(curPage - 1) * pageSize:curPage * pageSize]
     lis = []
     i = 0
-    o = Tg()
-    t = Tg()
-    s = Tg()
+    o = res[0]
+    t = res[0]
+    s = res[0]
     if c > 0:
-        o = a[int(random.random() * c)]
-        t = a[int(random.random() * c)]
-        s = a[int(random.random() * c)]
+        o = tt[int(random.random() * c)]
+        t = tt[int(random.random() * c)]
+        s = tt[int(random.random() * c)]
     one = int(random.random() * pageSize)
     two = int(random.random() * pageSize)
     three = int(random.random() * pageSize)
@@ -78,29 +107,28 @@ def ajaxdata(request):
         if maintenance: #维护中
             d["id"]=-1
             if i%3==1:
-                d["title"] = o.des
-                d["url"] = o.url
+                d["title"] = o["desc"]
+                d["url"] = o["url"]
             elif i%3==2:
-                d["title"] = t.des
-                d["url"] = t.url
+                d["title"] = t["desc"]
+                d["url"] = t["url"]
             else:
-                d["title"] = s.des
-                d["url"] = s.url
+                d["title"] = s["desc"]
+                d["url"] = s["url"]
         else:
-            d["title"] = r.title
-            d["id"] = r.id
+            d["title"] = r["title"]
+            d["id"] = r["id"]
             if i == one:
-                d["url"] = o.url
+                d["url"] = o["url"]
                 d["id"] = -1
             elif i == two:
-                d["url"] = t.url
+                d["url"] = t["url"]
                 d["id"] = -1
             elif i==three:
-                d["url"] = s.url
+                d["url"] = s["url"]
                 d["id"] = -1
             else:
                 d["url"] = ""
-        d["ishot"] = 1 if r.id % 4 == 0 or r.id % 7 == 0 else 0
         lis.append(d)
         i += 1
     dd = dict()
